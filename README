@@ -1,0 +1,6 @@
+Decompiler for a cotopha binaries (Entis)
+
+Usage:
+    cotopha_decompiler --export --input /media/Dev/Projects/Sora/cotopha/sample/yosuga.csx --output /media/Dev/Projects/Sora/data
+    
+After processing destination directory contains RAW section and text files (one per function). Text files contains sub-ASM for this engine
