@@ -230,9 +230,7 @@ void CSXFile::decompile()
 
 void CSXFile::listing_to_file(std::string fn)
 {
-    Stream *str = new Stream(fn, FILE_OPEN_WRITE_ST);
-    m_image->listing_to_stream(str);
-    delete str;
+    m_image->listing_to_dir(fn);
 }
 
 std::u16string CSXFile::get_function_name(uint32_t offset)

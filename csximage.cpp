@@ -1,4 +1,5 @@
 #include "csximage.h"
+#include <QString>
 
 CSXImage* CSXImage::m_instance;
 
@@ -35,13 +36,19 @@ void CSXImage::decompile_bin(Stream* str, uint32_t pos)
     }
 }
 
-void CSXImage::listing_to_stream(Stream* str)
+void CSXImage::listing_to_dir(std::string dir_path)
 {
-    //int idx = 0;
-    for (CSXFunction* func : m_instance->m_functions)
+    /*int idx = 0;
+    for (CSXFunction* func : m_instance->m_functions)*/
+    for (size_t idx=0 ; idx<m_instance->m_functions.size() ; ++idx)
     {
+        CSXFunction* func = m_instance->m_functions[idx];
         //printf("%i/%i\n", ++idx, m_instance->m_functions.size());
+        Stream *str = new Stream(dir_path + "/" +
+                                 std::to_string(idx) +
+                                 ".cos", FILE_OPEN_WRITE_ST);
         func->listing_to_stream(str);
+        delete str;
     }
 }
 

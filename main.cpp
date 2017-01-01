@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
         csx->read_linkinf();
 
         csx->decompile();
-        csx->listing_to_file(output + "source.cos_dec");
+        csx->listing_to_file(output);
     }
 
     delete csx;

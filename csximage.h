@@ -10,7 +10,7 @@ public:
     ~CSXImage();
 
     void decompile_bin(Stream* str, uint32_t pos);
-    void listing_to_stream(Stream* str);
+    void listing_to_dir(std::string dir_path);
 
     static CSXFunction* get_function_by_offset(uint32_t offset);
 
