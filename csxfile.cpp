@@ -216,6 +216,9 @@ void CSXFile::read_linkinf()
             }
 
             tmp->read(&count, sizeof(uint32_t)); //always 0
+            for (uint32_t i=0 ; i<count ; ++i)
+                tmp->read(&offset, sizeof(uint32_t));
+
             tmp->read(&count, sizeof(uint32_t));
             for (uint32_t i=0 ; i<count ; ++i)
             {
