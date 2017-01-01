@@ -18,7 +18,6 @@ int main(int argc, char *argv[])
     if (export_csx)
     {
         csx->load_from_file(input);
-        csx->export_all_sections(output);
 
         csx->read_offsets();
         csx->print_offsets();
@@ -27,6 +26,11 @@ int main(int argc, char *argv[])
         //csx->print_conststr();
 
         csx->read_linkinf();
+
+        csx->read_global();
+        csx->print_global();
+
+        csx->export_all_sections(output);
 
         csx->decompile();
         csx->listing_to_file(output);

@@ -4,6 +4,15 @@
 #include "stream.h"
 #include <map>
 
+#define FIELD_TYPE_STRUCT 0x00
+#define FIELD_TYPE_REF 0x01
+#define FIELD_TYPE_PARENT 0x02
+#define FIELD_TYPE_UNK 0x03
+#define FIELD_TYPE_INTEGER 0x04
+#define FIELD_TYPE_REAL 0x05
+#define FIELD_TYPE_STRING 0x06
+#define FILED_TYPE_DEF 0x06 //TODO: name
+
 enum class EVariableType
 {
     STRUCT,

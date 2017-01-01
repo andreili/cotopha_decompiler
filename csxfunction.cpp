@@ -34,23 +34,12 @@ CSXFunction::~CSXFunction()
 #define OP_CAT_LOGIC 0x0d
 #define OP_CAT_CMP  0x0e
 
-#define FIELD_TYPE_STRUCT 0x00
-#define FIELD_TYPE_REF 0x01
-#define FIELD_TYPE_PARENT 0x02
-#define FIELD_TYPE_UNK 0x03
-#define FIELD_TYPE_INTEGER 0x04
-#define FIELD_TYPE_REAL 0x05
-#define FIELD_TYPE_STRING 0x06
-#define FILED_TYPE_DEF 0x06 //TODO: name
-
 #define NAME_ON_TABLE 0x80000000
 
 void CSXFunction::decompile_from_bin(Stream* str)
 {
     m_define_offset = str->getPosition() - 1;
     m_name = CSXUtils::read_unicode_string(str);
-
-    printf("Parse function: %S\n", QString::fromStdU16String(m_name.c_str()).toStdWString().c_str());
 
     str->read(&m_params_count, sizeof(uint32_t));
     for (uint32_t i=0 ; i<m_params_count ; ++i)
