@@ -290,7 +290,7 @@ void CSXFunction::parse_stack_op(Stream* str)
             uint8_t unk1;
             uint32_t unk2;
             str->read(&unk1, sizeof(uint8_t));
-            str->read(&unk2, sizeof(uint32_t));
+            str->read(&m_cur_op->field_name.value_integer, sizeof(uint32_t));
             m_cur_op->op = EFunctionOperation::PUSH_UNK;
         }
         break;
@@ -816,7 +816,7 @@ std::u16string CSXFunction::oper_to_string(operation_t *oper, uint32_t op_idx)
         res += u"\tPUSH_OBJ " + oper->field_name.name + u" " + CSXUtils::to_u16string(oper->field_name.value_integer);
         break;
     case EFunctionOperation::PUSH_UNK:
-        res += u"\tPUSH_UNK";
+        res += u"\tPUSH_UNK " + CSXUtils::to_u16string(oper->field_name.value_integer);
         break;
     case EFunctionOperation::POP_INC:
         res += u"\tPOP +=";
