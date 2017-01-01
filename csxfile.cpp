@@ -5,6 +5,7 @@
 #include <codecvt>
 #include <algorithm>
 #include <QString>
+#include <thread>
 
 CSXFile* CSXFile::m_instance = nullptr;
 
@@ -175,13 +176,45 @@ void CSXFile::read_linkinf()
     }
 }
 
+std::atomic_int threads_count;
+#define THREADS_MAX 3
+
+void thread_decompile(void* data, uint32_t size, uint32_t offset, CSXImage* img)
+{
+    Stream* tmp = new Stream(data, size);
+    img->decompile_bin(tmp, offset);
+    delete tmp;
+    --threads_count;
+}
+
 void CSXFile::decompile()
 {
     for (auto section : m_sections)
     {
         if (section->get_id().compare("image   ") == 0)
         {
-            Stream* tmp =new Stream((void*)section->get_data(), section->get_size());
+            m_image = new CSXImage();
+
+            std::vector<uint32_t> offsets;
+            for (uint32_t offset : m_init_offsets)
+                offsets.push_back(offset);
+            for (auto offset : m_offsets)
+                offsets.push_back(offset.first);
+
+            threads_count = 0;
+            int idx = 0;
+            for (uint32_t offset : offsets)
+            {
+                while (threads_count >= THREADS_MAX)
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+                printf("Parse functions: %i/%i\n", ++idx, offsets.size());
+                new std::thread(thread_decompile, (void*)section->get_data(), section->get_size(), offset, m_image);
+                //thread_decompile((void*)section->get_data(), section->get_size(), offset, m_image);
+                ++threads_count;
+            }
+
+            /*Stream* tmp = new Stream((void*)section->get_data(), section->get_size());
             m_image = new CSXImage();
 
             for (uint32_t offset : m_init_offsets)
