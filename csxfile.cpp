@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <QString>
 #include <thread>
+#include "csxfunction.h"
 
 CSXFile* CSXFile::m_instance = nullptr;
 
@@ -139,6 +140,65 @@ void CSXFile::print_conststr()
     }
 }
 
+void CSXFile::read_global()
+{
+    for (auto section : m_sections)
+    {
+        if (section->get_id().compare("global  ") == 0)
+        {
+            Stream* tmp =new Stream((void*)section->get_data(), section->get_size());
+
+            uint32_t count;
+            tmp->read(&count, sizeof(uint32_t));
+            for (uint32_t i=0 ; i<count ; ++i)
+            {
+                global_t gl;
+                gl.name = CSXUtils::read_unicode_string(tmp);
+                tmp->read(&gl.type, sizeof(uint32_t));
+                if (gl.type != 3)
+                    gl.type_name = CSXUtils::read_unicode_string(tmp);
+                switch((EVariableType)gl.type)
+                {
+                case EVariableType::REF:
+                    gl.type_name = u"Reference";
+                    break;
+                case EVariableType::PARENT:
+                    gl.type_name = u"parent";
+                    break;
+                case EVariableType::UNK:
+                    gl.type_name = u"unknown_type";
+                    break;
+                case EVariableType::INTEGER:
+                    gl.type_name = u"Integer";
+                    break;
+                case EVariableType::REAL:
+                    gl.type_name = u"Real";
+                    break;
+                case EVariableType::STRING:
+                    gl.type_name = u"String";
+                    break;
+                default:
+                    break;
+                }
+
+                m_global.push_back(gl);
+            }
+
+            delete tmp;
+        }
+    }
+}
+
+void CSXFile::print_global()
+{
+    printf("global section:\n");
+    for (auto &val : m_global)
+    {
+        printf("\t%S\t%S\n", QString::fromStdU16String(val.type_name).toStdWString().c_str(),
+               QString::fromStdU16String(val.name).toStdWString().c_str());
+    }
+}
+
 void CSXFile::read_linkinf()
 {
     for (auto section : m_sections)
@@ -223,7 +283,7 @@ void CSXFile::decompile()
             for (auto offset : m_offsets)
                 m_image->decompile_bin(tmp, offset.first);
 
-            delete tmp;
+            delete tmp;*/
         }
     }
 }

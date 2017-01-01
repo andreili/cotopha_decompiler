@@ -14,6 +14,13 @@ typedef struct
     uint32_t    unknown2;
 } CSXHeader_t;
 
+typedef struct
+{
+    std::u16string  name;
+    int32_t type;
+    std::u16string  type_name;
+} global_t;
+
 #define offset_type std::pair<uint32_t,std::u16string>
 
 class CSXFile
@@ -29,6 +36,9 @@ public:
 
     void read_conststr();
     void print_conststr();
+
+    void read_global();
+    void print_global();
 
     void read_linkinf();
 
@@ -52,6 +62,9 @@ private:
 
     //constsrt
     std::map<uint32_t,std::u16string> m_conststr;
+
+    //global
+    std::vector<global_t>       m_global;
 
     //linkinf
     std::vector<uint32_t>       m_linkinf1;
