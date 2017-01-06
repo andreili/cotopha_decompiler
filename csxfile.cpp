@@ -271,7 +271,7 @@ void CSXFile::decompile()
                 while (threads_count >= THREADS_MAX)
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-                printf("Parse functions: %i/%i\n", ++idx, offsets.size());
+                printf("\rParse functions: %i/%i", ++idx, offsets.size());
                 new std::thread(thread_decompile, (void*)section->get_data(), section->get_size(), offset, m_image);
                 //thread_decompile((void*)section->get_data(), section->get_size(), offset, m_image);
                 ++threads_count;
@@ -289,6 +289,8 @@ void CSXFile::decompile()
             delete tmp;*/
         }
     }
+    while (threads_count)
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
 
 void CSXFile::listing_to_file(std::string fn)

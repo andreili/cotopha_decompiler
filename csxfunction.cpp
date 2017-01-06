@@ -278,11 +278,16 @@ void CSXFunction::parse_stack_op(Stream* str)
         break;
     case OP_STACK_PUSH_OBJ_LINK:
         str->read(&op_code, sizeof(uint8_t));
-        if (op_code != 0x04)
-            throw_ex("Invalid object location!", op_code, offset);
         m_cur_op->op = EFunctionOperation::PUSH_OBJ;
-        m_cur_op->field_name.name = CSXFile::get_linkinf(offset + 2);
-        str->read(&m_cur_op->field_name.value_integer, sizeof(int32_t));
+        if (op_code == 0x04)
+        {
+            m_cur_op->field_name.name = CSXFile::get_linkinf(offset + 2);
+            str->read(&m_cur_op->field_name.value_integer, sizeof(int32_t));
+        }
+        else if (op_code == 0x06)
+            m_cur_op->field_name.name = CSXUtils::read_unicode_string(str);
+        else
+            throw_ex("Invalid object location!", op_code, offset);
         //str->seek(4, spCurrent); //TODO
         break;
     case OP_STACK_PUSH_UNK: //TODO

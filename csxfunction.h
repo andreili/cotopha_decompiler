@@ -82,7 +82,7 @@ enum class EFunctionOperation
     MATH_OR,    // cat 0x0c op 0x06
     MATH_XOR,   // cat 0x0c op 0x07
     MATH_UNK1,  // cat 0x0c op 0x08
-    MATH_UNK2,  // cat 0x0c op 0x09
+    MATH_UNK2,  // cat 0x0c op 0x09 //TODO: ! (logic inversion)
 
     LOGIC_UNK1, // cat 0x0d op 0x01
     LOGIC_UNK2, // cat 0x0d op 0x02

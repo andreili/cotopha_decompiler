@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
         csx->load_from_file(input);
 
         csx->read_offsets();
-        csx->print_offsets();
+        //csx->print_offsets();
 
         csx->read_conststr();
         //csx->print_conststr();
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
         csx->read_linkinf();
 
         csx->read_global();
-        csx->print_global();
+        //csx->print_global();
 
         csx->export_all_sections(output);
 
