@@ -19,6 +19,8 @@ typedef struct
     std::u16string  name;
     int32_t type;
     std::u16string  type_name;
+    int             init_val_integer;
+    float           init_val_real;
 } global_t;
 
 #define offset_type std::pair<uint32_t,std::u16string>

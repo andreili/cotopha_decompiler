@@ -155,7 +155,7 @@ void CSXFile::read_global()
                 global_t gl;
                 gl.name = CSXUtils::read_unicode_string(tmp);
                 tmp->read(&gl.type, sizeof(uint32_t));
-                if (gl.type != 3)
+                if (gl.type == 0)
                     gl.type_name = CSXUtils::read_unicode_string(tmp);
                 switch((EVariableType)gl.type)
                 {
@@ -163,19 +163,31 @@ void CSXFile::read_global()
                     gl.type_name = u"Reference";
                     break;
                 case EVariableType::PARENT:
-                    gl.type_name = u"parent";
+                    {
+                        gl.type_name = u"parent";
+                        uint32_t len;
+                        tmp->read(&len, sizeof(uint32_t));  // unknown, always zero?
+                        if (len > 0)
+                        {
+                            printf("Unknown data! seek 112 bytes\n");
+                            tmp->seek(112, ESeekMethod::spCurrent);
+                        }
+                    }
                     break;
                 case EVariableType::UNK:
                     gl.type_name = u"unknown_type";
                     break;
                 case EVariableType::INTEGER:
                     gl.type_name = u"Integer";
+                    tmp->read(&gl.init_val_integer, sizeof(uint32_t));
                     break;
                 case EVariableType::REAL:
                     gl.type_name = u"Real";
+                    tmp->read(&gl.init_val_real, sizeof(uint32_t));
                     break;
                 case EVariableType::STRING:
                     gl.type_name = u"String";
+                    tmp->read(&gl.init_val_integer, sizeof(uint32_t));  // unknown, always zero?
                     break;
                 default:
                     break;
@@ -196,6 +208,23 @@ void CSXFile::print_global()
     {
         printf("\t%S\t%S\n", QString::fromStdU16String(val.type_name).toStdWString().c_str(),
                QString::fromStdU16String(val.name).toStdWString().c_str());
+        switch ((EVariableType)val.type)
+        {
+        case EVariableType::INTEGER:
+            printf("\t\tInitialization value: %i\n", val.init_val_integer);
+            break;
+        case EVariableType::REAL:
+            printf("\t\tInitialization value: %f\n", val.init_val_real);
+            break;
+        case EVariableType::PARENT:
+            printf("\t\tUnknown PARENT field: %i\n", val.init_val_integer);
+            break;
+        case EVariableType::STRING:
+            printf("\t\tUnknown STRING field: %i\n", val.init_val_integer);
+            break;
+        default:
+            break;
+        }
     }
 }
 
@@ -271,7 +300,7 @@ void CSXFile::decompile()
                 while (threads_count >= THREADS_MAX)
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-                printf("\rParse functions: %i/%i", ++idx, offsets.size());
+                printf("\rParse functions: %i/%lu", ++idx, offsets.size());
                 new std::thread(thread_decompile, (void*)section->get_data(), section->get_size(), offset, m_image);
                 //thread_decompile((void*)section->get_data(), section->get_size(), offset, m_image);
                 ++threads_count;

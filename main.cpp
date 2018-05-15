@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
         csx->read_linkinf();
 
         csx->read_global();
-        //csx->print_global();
+        csx->print_global();
 
         csx->export_all_sections(output);
 

@@ -234,6 +234,9 @@ void CSXFunction::parse_local_op(Stream* str)
 #define OP_STACK_PUSH_OBJ_LINK 0x03
 #define OP_STACK_PUSH_UNK 0x04
 
+#define OP_STACK_PUSH_VAR_LOC_REF 0x04
+#define OP_STACK_PUSH_VAR_LOC_NAME 0x06
+
 #define OP_PUSH_THIS 0x01
 #define OP_PUSH_FIELD 0x06
 
@@ -252,13 +255,24 @@ void CSXFunction::parse_stack_op(Stream* str)
         break;
     case OP_STACK_PUSH_VAR:
         {
-            str->read(&op_code, sizeof(uint8_t));
-            if (op_code != 0x04)
-                throw_ex("Invalid variable location!", op_code, offset);
             m_cur_op->op = EFunctionOperation::PUSH_VAR;
+
+            uint8_t var_loc;
             uint32_t var_idx;
-            str->read(&var_idx, sizeof(uint32_t));
-            m_cur_op->field_name.name = m_variables[var_idx].name;
+            str->read(&var_loc, sizeof(uint8_t));
+            switch (var_loc)
+            {
+            case OP_STACK_PUSH_VAR_LOC_REF:
+                str->read(&var_idx, sizeof(uint32_t));
+                m_cur_op->field_name.name = m_variables[var_idx].name;
+                break;
+            case OP_STACK_PUSH_VAR_LOC_NAME:
+                m_cur_op->field_name.name = CSXUtils::read_unicode_string(str);
+                break;
+            default:
+                throw_ex("Invalid variable location!", op_code, offset);
+                break;
+            }
         }
         break;
     case OP_STACK_PUSH_THIS_FIELD:
@@ -293,7 +307,6 @@ void CSXFunction::parse_stack_op(Stream* str)
     case OP_STACK_PUSH_UNK: //TODO
         {
             uint8_t unk1;
-            uint32_t unk2;
             str->read(&unk1, sizeof(uint8_t));
             str->read(&m_cur_op->field_name.value_integer, sizeof(uint32_t));
             m_cur_op->op = EFunctionOperation::PUSH_UNK;
@@ -368,8 +381,22 @@ void CSXFunction::parse_label_op(Stream* str)
 
     m_cur_op->field_name.name = CSXUtils::read_unicode_string(str);
 
-    uint32_t unk1;
-    str->read(&unk1, sizeof(uint32_t));
+    int32_t var_loc_count;
+    str->read(&var_loc_count, sizeof(int32_t));
+    if (var_loc_count > 0)
+        for (int32_t i=0 ; i<var_loc_count ; ++i)
+        {
+            operation_t *local_var = new operation_t;
+            local_var->op = EFunctionOperation::INIT_LOCAL;
+
+            uint8_t var_type;
+            str->read(&var_type, sizeof(uint8_t));
+            local_var->field_name.type = (EVariableType)var_type;
+
+            local_var->field_name.name = CSXUtils::read_unicode_string(str);
+
+            m_operations.push_back(local_var);
+        }
 
     if (m_cur_op->field_name.name.compare(u"@TRY") == 0)
     {
@@ -393,6 +420,7 @@ void CSXFunction::parse_jump_op(Stream* str)
 }
 
 #define OP_JUMP_RELATIVE 0x00 //TODO
+#define OP_JUMP_ABSOLUTE 0x01 //TODO
 
 void CSXFunction::parse_jump_cond_op(Stream* str)
 {
@@ -407,6 +435,10 @@ void CSXFunction::parse_jump_cond_op(Stream* str)
     switch (jump_type)
     {
     case OP_JUMP_RELATIVE:
+        m_cur_op->op = EFunctionOperation::JUMP_COND;
+        m_cur_op->field_name.value_integer = jump_off;
+        break;
+    case OP_JUMP_ABSOLUTE:
         m_cur_op->op = EFunctionOperation::JUMP_COND;
         m_cur_op->field_name.value_integer = jump_off;
         break;
@@ -747,6 +779,9 @@ void CSXFunction::parse_value(Stream* str)
         break;
     case FIELD_TYPE_REF:
         m_cur_op->field_name.type = EVariableType::REF;
+        break;
+    case FIELD_TYPE_PARENT:
+        m_cur_op->field_name.type = EVariableType::PARENT;
         break;
     case FIELD_TYPE_INTEGER:
         m_cur_op->field_name.type = EVariableType::INTEGER;
